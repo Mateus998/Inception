@@ -9,13 +9,14 @@ services:
       - mariadb_data:/var/lib/mysql     # Persist database data (MariaDB datadir)
     networks:
       - inception                       # Attach to the private "inception" bridge network
-    restart: unless-stopped             # Restart policy: keep it running unless you stop it manually
-    healthcheck:                        # Check if is everything good with the container
-      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -uroot -p${MARIADB_ROOT_PASSWORD} --silent"]
+    restart: always                     # Restart policy
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin --protocol=socket --socket=/run/mysqld/mysqld.sock -uroot -p${MARIADB_ROOT_PASSWORD} ping --silent"]
       interval: 5s
       timeout: 3s
       retries: 30
-      start_period: 20s
+      start_period: 30s
+
 
   wordpress:
     build:
@@ -30,24 +31,29 @@ services:
     depends_on:
       mariadb:                         # Start MariaDB before WordPress (order and "ready" check)
         condition: service_healthy
-    restart: unless-stopped
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm8.2 -t >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
 
   nginx:
-    build:
-      context: ./requirements/nginx     # Build Nginx image (reverse proxy / TLS termination)
+    build: requirements/nginx
     container_name: nginx
-    env_file:
-      - .env                            # Often used for DOMAIN_NAME and config templating
-    volumes:
-      - wordpress_data:/var/www/html:ro # Mount WP files read-only so Nginx can serve static content
-      - ./requirements/nginx/certs:/etc/nginx/certs:ro # Mount TLS cert/key into Nginx (read-only)
+    depends_on:
+      wordpress:
+        condition: service_healthy
     ports:
-      - "443:443"                       # Expose HTTPS on host port 443 -> container port 443
+      - "443:443"
+    volumes:
+      - wordpress_data:/var/www/html
     networks:
       - inception
-    depends_on:
-      - wordpress                       # Start WordPress before Nginx (order only)
-    restart: unless-stopped
+    restart: always
+    env_file:
+      - .env
 
 networks:
   inception:
