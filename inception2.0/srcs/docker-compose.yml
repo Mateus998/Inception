@@ -1,0 +1,110 @@
+services:
+  mariadb:
+    # Build locally from our own Dockerfile (no pre-made service images).
+    build: ./requirements/mariadb
+    image: mariadb
+    container_name: mariadb
+
+    # Non-sensitive config comes from .env (DB name, user, etc.).
+    env_file:
+      - .env
+
+    # Passwords are injected as Docker secrets (not baked into images).
+    secrets:
+      - db_password
+      - db_root_password
+
+    # Persistent database storage (must survive container recreation).
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+    # Internal-only connectivity through a dedicated bridge network.
+    networks:
+      - inception
+
+    # Subject requires resiliency on crashes.
+    restart: always
+
+  wordpress:
+    build: ./requirements/wordpress
+    image: wordpress
+    container_name: wordpress
+
+    # Start after DB container; readiness is handled in init script (Step 2).
+    depends_on:
+      - mariadb
+
+    env_file:
+      - .env
+
+    # DB password + WP user passwords as secrets.
+    secrets:
+      - db_password
+      - wp_password
+      - wp_adm_password
+
+    # WordPress files persisted (so WP install/plugins/uploads survive rebuilds).
+    volumes:
+      - wordpress_data:/var/www/html
+
+    networks:
+      - inception
+    restart: always
+
+  nginx:
+    build: ./requirements/nginx
+    image: nginx
+    container_name: nginx
+
+    # NGINX must be the only public entrypoint.
+    depends_on:
+      - wordpress
+
+    env_file:
+      - .env
+
+    # NGINX needs access to WP filesystem for static files,
+    # and forwards PHP execution to php-fpm in the wordpress container.
+    volumes:
+      - wordpress_data:/var/www/html
+
+    networks:
+      - inception
+
+    # Only expose 443 on the host (subject requirement).
+    ports:
+      - "443:443"
+
+    restart: always
+
+secrets:
+  # Secret files live outside srcs/ (repo root /secrets) and must not be committed.
+  db_password:
+    file: ../secrets/db_password
+  db_root_password:
+    file: ../secrets/db_root_password
+  wp_password:
+    file: ../secrets/wp_password
+  wp_adm_password:
+    file: ../secrets/wp_adm_password
+
+volumes:
+  # We declare named volumes but bind them to the required host path.
+  # This makes data visible under /home/${LOGIN}/data while still using Compose volumes.
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${LOGIN}/data/mariadb
+
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${LOGIN}/data/wordpress
+
+networks:
+  inception:
+    driver: bridge

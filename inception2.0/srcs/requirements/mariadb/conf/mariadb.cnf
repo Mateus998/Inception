@@ -1,0 +1,11 @@
+[mysqld]
+# Listen on all interfaces so other containers can reach it via the Docker network.
+bind-address=0.0.0.0
+port=3306
+
+# Keep default datadir location; it will be mounted as a persistent volume.
+datadir=/var/lib/mysql
+
+# Improve compatibility for containerized usage.
+skip-host-cache
+skip-name-resolve
