@@ -178,6 +178,10 @@ docker compose -f srcs/docker-compose.yml logs -f nginx
 
 ---
 
+### Local domain mapping (required for testing)
+
+Inside the VM, get its current IP address with `hostname -I`, then map the required domain to that IP by editing `/etc/hosts` (e.g., `sudo nano /etc/hosts`) and adding a line like: `192.168.56.101 mateferr.42.fr` (replace the IP with your VM IP). After saving, verify name resolution and HTTPS reachability with: `curl -kI https://mateferr.42.fr`. A self-signed certificate warning is expected.
+
 ## 7) Where to debug common problems
 
 ### Domain not resolving

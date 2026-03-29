@@ -45,4 +45,4 @@ fclean: down
 
 re: fclean up
 
-.PHONY: all up down start stop restart build logs ps create_dirs fclean re
+.PHONY: all up down start stop restart build logs ps create_dirs set_login fclean re
