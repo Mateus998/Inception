@@ -36,9 +36,9 @@ esac
 # Wait for DB to accept connections (bounded wait, not infinite).
 echo "[wordpress] Waiting for MariaDB..."
 i=0
-until mariadb -hmariadb -u"${MYSQL_USER}" -p"${DB_PASSWORD}" -e "SELECT 1;" "${MYSQL_DATABASE}" >/dev/null 2>&1; do
+until mariadb -h mariadb -u"${MYSQL_USER}" -p"${DB_PASSWORD}" -e "SELECT 1;" >/dev/null 2>&1; do
   i=$((i+1))
-  if [ "$i" -gt 60 ]; then
+  if [ "$i" -gt 120 ]; then
     echo "[wordpress] MariaDB not ready after timeout" >&2
     exit 1
   fi
@@ -85,7 +85,7 @@ if ! wp core is-installed --allow-root >/dev/null 2>&1; then
 fi
 
 # Permissions (keep it simple; adjust if evaluator is strict).
-chown -R nobody:nobody /var/www/html
+chown -R www-data:www-data /var/www/html
 
 echo "[wordpress] Starting php-fpm..."
-exec php-fpm82 -F
+exec php-fpm8.2 -F
