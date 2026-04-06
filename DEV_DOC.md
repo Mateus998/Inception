@@ -82,10 +82,10 @@ touch secrets/db_root_password
 touch secrets/wp_adm_password
 touch secrets/wp_password
 # password creation example: 8246 as test password
-printf '%s' '8246' > secrets/db_password
-printf '%s' '8246' > secrets/db_root_password
-printf '%s' '8246' > secrets/wp_password
-printf '%s' '8246' > secrets/wp_adm_password
+printf '%s' '8246' > secrets/db_password.txt
+printf '%s' '8246' > secrets/db_root_password.txt
+printf '%s' '8246' > secrets/wp_password.txt
+printf '%s' '8246' > secrets/wp_adm_password.txt
 chmod 600 secrets/*
 ```
 
