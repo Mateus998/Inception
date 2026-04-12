@@ -1,0 +1,39 @@
+server {
+    # Listen on port 443 with SSL (HTTPS only — HTTP is not allowed)
+    listen      443 ssl;
+    listen      [::]:443 ssl;
+
+    # Domain name this server responds to
+    server_name mateferr.42.fr;
+
+    # TLS certificate and key generated during image build
+    ssl_certificate     /etc/ssl/certs/nginx.crt;
+    ssl_certificate_key /etc/ssl/private/nginx.key;
+
+    # Only TLSv1.2 and TLSv1.3 are allowed (as required by the subject)
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    # WordPress files are served from this directory
+    root  /var/www/html;
+    index index.php index.html;
+
+    location / {
+        # Try to serve the file directly, then as a directory,
+        # otherwise pass to WordPress (index.php)
+        try_files $uri $uri/ /index.php?$args;
+    }
+
+    location ~ \.php$ {
+        # Pass PHP files to WordPress container via php-fpm on port 9000
+        # "wordpress" is the service name defined in docker-compose.yml
+        fastcgi_pass  wordpress:9000;
+
+        fastcgi_index index.php;
+
+        # SCRIPT_FILENAME tells php-fpm the full path to the PHP file to execute
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+
+        # Load the standard FastCGI parameters
+        include fastcgi_params;
+    }
+}

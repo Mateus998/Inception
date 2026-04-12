@@ -1,0 +1,12 @@
+[mysqld]
+# Listen on all interfaces so other containers can connect
+bind-address            = 0.0.0.0
+
+# Data directory
+datadir                 = /var/lib/mysql
+
+# Unix socket (used locally by the init script)
+socket                  = /run/mysqld/mysqld.sock
+
+# Port
+port                    = 3306

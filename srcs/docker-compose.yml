@@ -1,123 +1,85 @@
-# docker-compose.yml
-# Minimal 42 Inception setup:
-# - nginx (TLS entrypoint)
-# - wordpress (php-fpm only)
-# - mariadb (database only)
-# - named volumes mapped to /home/mateferr/data on host (via driver_opts)
-# - secrets for passwords (no hardcoded credentials)
-
 services:
+
   mariadb:
+    build: requirements/mariadb
     container_name: mariadb
-    build:
-      context: ./requirements/mariadb
-      dockerfile: Dockerfile
+    # Restart the container automatically if it crashes
+    restart: always
+    volumes:
+      # Named volume for persistent database data
+      - mariadb:/var/lib/mysql
+    networks:
+      - inception
     env_file:
+      # Non-sensitive variables (db name, user, etc.)
       - .env
-    environment:
-      # Non-secret DB settings from .env
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      # Secrets paths (Docker mounts these files inside the container)
-      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
-      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
     secrets:
       - db_password
       - db_root_password
-    volumes:
-      - mariadb_data:/var/lib/mysql
-    networks:
-      - inception
-    restart: unless-stopped
 
   wordpress:
+    build: requirements/wordpress
     container_name: wordpress
-    build:
-      context: ./requirements/wordpress
-      dockerfile: Dockerfile
+    restart: always
+    # WordPress must start after MariaDB is up
     depends_on:
       - mariadb
+    volumes:
+      # Named volume shared with NGINX for WordPress files
+      - wordpress:/var/www/html
+    networks:
+      - inception
     env_file:
       - .env
-    environment:
-      # WordPress site/app settings
-      - WP_DOMAIN=${WP_DOMAIN}
-      - WP_TITLE=${WP_TITLE}
-      - WP_ADMIN_USER=${WP_ADMIN_USER}
-      - WP_ADMIN_EMAIL=${WP_ADMIN_EMAIL}
-      - WP_USER=${WP_USER}
-      - WP_USER_EMAIL=${WP_USER_EMAIL}
-
-      # DB connection
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_HOST=mariadb
-
-      # Secrets paths
-      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
-      - WP_ADMIN_PASSWORD_FILE=/run/secrets/wp_adm_password
-      - WP_USER_PASSWORD_FILE=/run/secrets/wp_password
     secrets:
       - db_password
       - wp_adm_password
       - wp_password
-    volumes:
-      - wordpress_data:/var/www/html
-    networks:
-      - inception
-    restart: unless-stopped
 
   nginx:
+    build: requirements/nginx
     container_name: nginx
-    build:
-      context: ./requirements/nginx
-      dockerfile: Dockerfile
+    restart: always
+    # NGINX must start after WordPress is up
     depends_on:
       - wordpress
-    env_file:
-      - .env
-    environment:
-      # Used by init script / templating if needed
-      - WP_DOMAIN=${WP_DOMAIN}
     ports:
-      # You asked to force 80/443. We'll publish both.
-      # NGINX must still be the only entrypoint to the infra.
-      - "80:80"
+      # Only port 443 is exposed to the host — as required by the subject
       - "443:443"
     volumes:
-      # Read-only mount: nginx only serves the WP files, it should not modify them
-      - wordpress_data:/var/www/html:ro
+      # Same volume as WordPress so NGINX can serve the PHP files
+      - wordpress:/var/www/html
     networks:
       - inception
-    restart: unless-stopped
 
-# Named volumes (no bind mounts).
-# We use local driver with driver_opts so data lives under /home/mateferr/data on the host.
+# Named volumes stored on the host under /home/<login>/data/
 volumes:
-  mariadb_data:
+  mariadb:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/mateferr/data/mariadb
-
-  wordpress_data:
+      # This path is created by "make create_dirs"
+      device: /home/${LOGIN}/data/mariadb
+  wordpress:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/mateferr/data/wordpress
+      device: /home/${LOGIN}/data/wordpress
 
+# Custom network — containers communicate by service name
 networks:
   inception:
     driver: bridge
 
+# Docker secrets — read from files in secrets/ at repo root
 secrets:
   db_password:
-    file: ./../secrets/db_password.txt
+    file: ../secrets/db_password.txt
   db_root_password:
-    file: ./../secrets/db_root_password.txt
+    file: ../secrets/db_root_password.txt
   wp_adm_password:
-    file: ./../secrets/wp_adm_password.txt
+    file: ../secrets/wp_adm_password.txt
   wp_password:
-    file: ./../secrets/wp_password.txt
+    file: ../secrets/wp_password.txt

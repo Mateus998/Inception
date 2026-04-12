@@ -1,29 +1,29 @@
-# NGINX Dockerfile
-# Base image fixed by project requirement (even if suspicious): debian:wormbook
-
 FROM debian:bookworm
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install nginx + openssl for self-signed cert generation
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install NGINX and OpenSSL (to generate the self-signed TLS certificate)
+RUN apt-get update && apt-get install -y \
     nginx \
     openssl \
-    ca-certificates \
-    bash \
     && rm -rf /var/lib/apt/lists/*
 
-# Remove default site to avoid confusion
-RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default || true
+# Generate a self-signed TLS certificate valid for 365 days
+# -x509       : output a self-signed certificate instead of a CSR
+# -nodes      : no passphrase on the private key (required for automated startup)
+# -days 365   : certificate validity
+# -newkey rsa:2048 : generate a new 2048-bit RSA key pair
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/ssl/private/nginx.key \
+    -out    /etc/ssl/certs/nginx.crt \
+    -subj   "/C=PT/ST=Lisbon/L=Lisbon/O=42Lisboa/CN=mateferr.42.fr"
 
-# Copy nginx config and init script
-COPY conf/nginx.conf /etc/nginx/nginx.conf
-COPY tools/init_ng.sh /usr/local/bin/init_ng.sh
+# Copy the NGINX configuration
+COPY conf/nginx.cnf /etc/nginx/sites-available/default
 
-RUN chmod +x /usr/local/bin/init_ng.sh
+# Copy and set up the init script
+COPY tools/init_nginx.sh /usr/local/bin/init_nginx.sh
+RUN chmod +x /usr/local/bin/init_nginx.sh
 
-EXPOSE 80 443
+# Only port 443 (HTTPS) is exposed — as required by the subject
+EXPOSE 443
 
-# Init script will generate certs (if missing) then exec nginx as PID 1
-ENTRYPOINT ["/usr/local/bin/init_ng.sh"]
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["init_nginx.sh"]

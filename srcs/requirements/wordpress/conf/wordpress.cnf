@@ -1,0 +1,20 @@
+; PHP-FPM pool configuration for WordPress
+
+[www]
+; The user and group the worker processes run as
+user  = www-data
+group = www-data
+
+; Listen on TCP instead of a Unix socket so NGINX (in another container) can reach it
+listen = 0.0.0.0:9000
+
+; Dynamic process management: spawns workers as needed
+pm                   = dynamic
+pm.max_children      = 5
+pm.start_servers     = 2
+pm.min_spare_servers = 1
+pm.max_spare_servers = 3
+
+; Pass environment variables into php-fpm workers
+; (needed so WP-CLI and php can read them)
+clear_env = no
