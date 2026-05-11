@@ -1,48 +1,20 @@
-NAME = inception
 COMPOSE = docker compose -f srcs/docker-compose.yml
-LOGIN = $(shell whoami)
-DATA_PATH = /home/$(LOGIN)/data
-DB_PATH = $(DATA_PATH)/mariadb
-WP_PATH = $(DATA_PATH)/wordpress
+DATA_DIR = /home/mateferr/data
 
-all: set_login up
-
-set_login:
-	grep -v '^LOGIN=' srcs/.env > tmp.env
-	echo "LOGIN=$(LOGIN)" >> tmp.env
-	mv tmp.env srcs/.env
-
-up: create_dirs
+all:
+	@mkdir -p $(DATA_DIR)/db $(DATA_DIR)/wordpress
 	$(COMPOSE) up -d --build
 
 down:
 	$(COMPOSE) down
 
-start:
-	$(COMPOSE) start
+clean:
+	$(COMPOSE) down -v
+	@rm -rf $(DATA_DIR)
 
-stop:
-	$(COMPOSE) stop
+fclean: clean
+	docker system prune -af
 
-restart: down up
+re: fclean all
 
-build:
-	$(COMPOSE) build
-
-logs:
-	$(COMPOSE) logs -f
-
-ps:
-	$(COMPOSE) ps
-
-create_dirs:
-	mkdir -p $(DB_PATH)
-	mkdir -p $(WP_PATH)
-
-fclean: down
-	sudo rm -rf $(DB_PATH)/*
-	sudo rm -rf $(WP_PATH)/*
-
-re: fclean up
-
-.PHONY: all up down start stop restart build logs ps create_dirs set_login fclean re
+.PHONY: all down clean fclean re

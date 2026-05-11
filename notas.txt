@@ -1,0 +1,10 @@
+sessao claude
+claude --resume 2d0a0ab6-e501-47c2-ae82-d43a49fc9499
+
+tarefas
+adicionar secrets que contem as passes usadas nos containers
+comentar files
+mudar dominio
+adaptar nome de login para whomi
+mudar fclean para executar com sudo
+adicionar os files .md
