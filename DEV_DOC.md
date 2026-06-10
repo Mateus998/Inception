@@ -134,6 +134,20 @@ docker logs nginx
 docker exec mariadb mysql -u wpuser -p$(cat secrets/db_password.txt) wordpress -e "SHOW TABLES;"
 ```
 
+### Use MariaDB database
+
+```bash
+docker exec -it db bash
+mysql -u app_user -p -h localhost
+# password...
+```
+```SQL
+USE "database_name";
+CREATE TABLE users (id INT, name VARCHAR(100));
+INSERT INTO users VALUES (1, 'user_example');
+SELECT * FROM users;
+```
+
 ### Cleanup
 
 | Command | What it removes |

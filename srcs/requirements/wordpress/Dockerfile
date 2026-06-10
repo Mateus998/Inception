@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
+# get wp-cli tool from internet - able terminal commands for wordpress managing
 RUN wget -q https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
     -O /usr/local/bin/wp \
     && chmod +x /usr/local/bin/wp
@@ -20,6 +21,7 @@ COPY conf/www.conf /etc/php/8.2/fpm/pool.d/www.conf
 COPY tools/init_wp.sh /usr/local/bin/init_wp.sh
 RUN chmod +x /usr/local/bin/init_wp.sh
 
+# folder for php-fpm 
 RUN mkdir -p /var/www/wordpress /run/php
 
 EXPOSE 9000

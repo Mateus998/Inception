@@ -12,12 +12,15 @@ until nc -z "${MYSQL_HOST}" 3306; do
 done
 echo "MariaDB is ready."
 
+# wordpress configuration if is first time
 if [ ! -f "${WP_DIR}/wp-config.php" ]; then
+    # get WordPress file with wp-cli
     wp core download \
         --path="${WP_DIR}" \
         --locale=en_US \
         --allow-root
 
+    # configuration file creation
     wp config create \
         --path="${WP_DIR}" \
         --dbname="${MYSQL_DATABASE}" \
@@ -26,6 +29,7 @@ if [ ! -f "${WP_DIR}/wp-config.php" ]; then
         --dbhost="${MYSQL_HOST}" \
         --allow-root
 
+    # WordPress instalation and configuration
     wp core install \
         --path="${WP_DIR}" \
         --url="${DOMAIN_NAME}" \
@@ -36,13 +40,16 @@ if [ ! -f "${WP_DIR}/wp-config.php" ]; then
         --skip-email \
         --allow-root
 
+    # extra user creation (not admin)
     wp user create "${WP_USER}" "${WP_USER_EMAIL}" \
         --path="${WP_DIR}" \
         --user_pass="${WP_USER_PASSWORD}" \
         --role=author \
         --allow-root
 
+    # allow php-fpm to write on wordpress files
     chown -R www-data:www-data "${WP_DIR}"
 fi
 
+# PHP-FPM is main process of container
 exec php-fpm8.2 --nodaemonize
