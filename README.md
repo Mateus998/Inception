@@ -159,11 +159,11 @@ make re
 
 ### AI Usage
 
-Claude (claude.ai) was used as an assistant during this project in the following areas:
+Claude, NotebookLM and GitHub Copilot were used as assistants during this project in the following areas:
 
-- **Debugging** — identifying why the MariaDB client was using TCP instead of the Unix socket when `MYSQL_HOST` was set as an environment variable in the container.
+- **Researching** — resuming and explaining all documentations and project examples for quicker understanding of the project tools.
+- **Debugging** — identifying sintaxe and compiling errors during initial development.
 - **Configuration review** — reviewing NGINX, PHP-FPM and MariaDB configuration files for correctness and Docker compatibility.
-- **Script logic** — discussing the initialization flow of the MariaDB and WordPress entrypoint scripts (wait loops, first-run detection, secret file reading).
-- **Makefile rules** — suggesting and structuring the Makefile targets.
+- **Content review** — reviewing and suggesting the theoric information present on the .md files.
 
 All generated content was reviewed, tested and understood before being included in the project.
