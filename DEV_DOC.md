@@ -16,27 +16,6 @@ echo "127.0.0.1 mateferr.42.fr" | sudo tee -a /etc/hosts
 
 ---
 
-### Configuration files
-
-All non-sensitive variables are stored in `srcs/.env`. This file is excluded from the repository (listed in `.gitignore`) and must be created manually if missing.
-
-**`srcs/.env` example:**
-```env
-DOMAIN_NAME=mateferr.42.fr
-
-MYSQL_DATABASE=wordpress
-MYSQL_USER=wpuser
-MYSQL_HOST=mariadb
-
-WP_TITLE=Inception Site
-WP_ADMIN_USER=mateferr
-WP_ADMIN_EMAIL=admin@inception.local
-WP_USER=wpeditor
-WP_USER_EMAIL=editor@inception.local
-```
-
----
-
 ### Secrets setup
 
 The `secrets/` folder is excluded from the repository (`.gitignore`). It must be created manually on every new clone before running the project.
@@ -68,7 +47,7 @@ Secrets are mounted read-only inside containers at `/run/secrets/<filename_witho
 
 ## Build and launch the project
 
-All commands must be run from the root of the project (`inception2/`).
+All commands must be run from the root of the project (`Inception/`).
 
 ### Full build and start
 
