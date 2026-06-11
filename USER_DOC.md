@@ -14,7 +14,7 @@ The Inception stack runs three services, each in its own container:
 
 ## Start and stop the project
 
-All commands must be run from the root of the project directory (`inception2/`).
+All commands must be run from the root of the project directory (`Inception/`).
 
 **Start the project** (builds images if needed):
 ```bash
@@ -76,7 +76,7 @@ Non-sensitive configuration (usernames, domain, email addresses) is in `srcs/.en
 | Account | Username | Role | Password location |
 |---------|----------|------|-------------------|
 | WordPress admin | `mateferr` | Administrator | `secrets/wp_admin_password.txt` |
-| WordPress editor | `wpeditor` | Author | `secrets/wp_user_password.txt` |
+| WordPress editor | `mateus` | Author | `secrets/wp_user_password.txt` |
 
 To change a password, update the corresponding file in `secrets/` and run `make re` to rebuild the stack.
 
