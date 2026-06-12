@@ -99,8 +99,13 @@ docker exec -it wordpress bash
 docker exec -it nginx bash
 ```
 
-### Check logs for a single service
+### Run single containers
 
+```bash
+docker run -d --name container -p port:cont_port container_name
+```
+
+### Check logs for a single service
 ```bash
 docker logs mariadb
 docker logs wordpress
@@ -110,14 +115,14 @@ docker logs nginx
 ### Test MariaDB directly
 
 ```bash
-docker exec mariadb mysql -u wpuser -p$(cat secrets/db_password.txt) wordpress -e "SHOW TABLES;"
+docker exec mariadb mysql -u mateus -p$(cat ../secrets/db_password.txt) wordpress -e "SHOW TABLES;"
 ```
 
 ### Use MariaDB database
 
 ```bash
-docker exec -it db bash
-mysql -u app_user -p -h localhost
+docker exec -it mariadb bash
+mysql -u mateus -p -h localhost
 # password...
 ```
 ```SQL

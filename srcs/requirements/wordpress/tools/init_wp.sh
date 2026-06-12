@@ -46,6 +46,9 @@ if [ ! -f "${WP_DIR}/wp-config.php" ]; then
         --user_pass="${WP_USER_PASSWORD}" \
         --role=author \
         --allow-root
+    
+    # wp theme install twentytwentythree --allow-root
+    # wp theme activate twentytwentythree --allow-root
 
     # allow php-fpm to write on wordpress files
     chown -R www-data:www-data "${WP_DIR}"
