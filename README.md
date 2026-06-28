@@ -79,6 +79,12 @@ This project uses named volumes backed by specific host directories (`/home/mate
 
 ## Instructions
 
+- ssh key management
+```bash
+ssh-keygen -t ed25519 -C "mateferr@student.42lisboa.com"
+cat ~/.ssh/id_ed25519.pub
+```
+
 ### Prerequisites
 
 - Docker and Docker Compose installed
