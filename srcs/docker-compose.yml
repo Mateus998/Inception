@@ -9,8 +9,6 @@ services:
     environment:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
-    ports:
-      - "3306:3306"
     secrets:
       - db_password
       - db_root_password
